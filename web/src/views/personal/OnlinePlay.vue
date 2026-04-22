@@ -308,6 +308,11 @@ const t2iSize = computed(() =>
   RATIOS.find((r) => r.ratio === t2iRatio.value)?.size ?? '1024x1024',
 )
 const t2iN = ref(1)
+// 本地高清放大档位(空=原图 / '2k' / '4k')。
+// 仅在图片代理 URL 首次请求时触发 decode + Catmull-Rom + PNG 编码,
+// 进程内 LRU 缓存命中后毫秒级返回。
+type UpscaleLevel = '' | '2k' | '4k'
+const t2iUpscale = ref<UpscaleLevel>('')
 
 // 切换比例时,实时把 prompt 第一行同步成新的 "Make the aspect ratio X:Y , "
 watch(t2iRatio, (nv) => {
@@ -351,6 +356,7 @@ async function sendText2Img() {
         prompt,
         n: t2iN.value,
         size: t2iSize.value,
+        upscale: t2iUpscale.value || undefined,
       },
       t2iAbort.value.signal,
     )
@@ -409,6 +415,7 @@ const i2iRatio = ref<string>('1:1')
 const i2iSize = computed(() =>
   RATIOS.find((r) => r.ratio === i2iRatio.value)?.size ?? '1024x1024',
 )
+const i2iUpscale = ref<UpscaleLevel>('')
 watch(i2iRatio, (nv) => {
   i2iPrompt.value = applyRatioPrefix(i2iPrompt.value, nv)
 })
@@ -469,6 +476,7 @@ async function sendImg2Img() {
         n: 1,
         size: i2iSize.value,
         reference_images: refImages.value.map((r) => r.dataUrl),
+        upscale: i2iUpscale.value || undefined,
       },
       i2iAbort.value.signal,
     )
@@ -756,6 +764,27 @@ watch(activeTab, (v) => {
             </div>
 
             <div class="side-row">
+              <label class="side-lbl">
+                输出尺寸
+                <el-tooltip placement="top" effect="light">
+                  <template #content>
+                    <div style="max-width:260px;line-height:1.55;">
+                      上游原生出图为 1024 或 1792 px;选择 2K/4K 会在图片加载时用本地
+                      <b>Catmull-Rom 插值</b>放大并以 PNG 输出。<br>
+                      <span style="color:#a16207;">注意:这是传统算法放大,不是 AI 超分,</span>不会补出新的纹理或毛发,只会让画面更大更平滑。4K 首次加载约 +0.5~1.5s,之后命中缓存。
+                    </div>
+                  </template>
+                  <el-icon style="margin-left:4px;color:#94a3b8;cursor:help;"><InfoFilled /></el-icon>
+                </el-tooltip>
+              </label>
+              <el-radio-group v-model="t2iUpscale" size="small" class="upscale-group">
+                <el-radio-button label="">原图</el-radio-button>
+                <el-radio-button label="2k">2K 高清</el-radio-button>
+                <el-radio-button label="4k">4K 高清</el-radio-button>
+              </el-radio-group>
+            </div>
+
+            <div class="side-row">
               <label class="side-lbl">Prompt</label>
               <el-input
                 v-model="t2iPrompt"
@@ -890,6 +919,27 @@ watch(activeTab, (v) => {
                 切换后会把 <code class="hint-code">Make the aspect ratio {{ i2iRatio }} ,</code>
                 作为 prompt 第一行
               </div>
+            </div>
+
+            <div class="side-row">
+              <label class="side-lbl">
+                输出尺寸
+                <el-tooltip placement="top" effect="light">
+                  <template #content>
+                    <div style="max-width:260px;line-height:1.55;">
+                      上游原生出图为 1024 或 1792 px;选择 2K/4K 会在图片加载时用本地
+                      <b>Catmull-Rom 插值</b>放大并以 PNG 输出。<br>
+                      <span style="color:#a16207;">注意:这是传统算法放大,不是 AI 超分,</span>不会补出新的纹理或毛发,只会让画面更大更平滑。4K 首次加载约 +0.5~1.5s,之后命中缓存。
+                    </div>
+                  </template>
+                  <el-icon style="margin-left:4px;color:#94a3b8;cursor:help;"><InfoFilled /></el-icon>
+                </el-tooltip>
+              </label>
+              <el-radio-group v-model="i2iUpscale" size="small" class="upscale-group">
+                <el-radio-button label="">原图</el-radio-button>
+                <el-radio-button label="2k">2K 高清</el-radio-button>
+                <el-radio-button label="4k">4K 高清</el-radio-button>
+              </el-radio-group>
             </div>
 
             <div class="side-row">
@@ -1070,6 +1120,16 @@ watch(activeTab, (v) => {
 .side-btn { margin-top: 4px; }
 .gen-btn { box-shadow: 0 6px 18px -6px rgba(64, 158, 255, 0.55); }
 .opt-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+
+/* ---- 输出尺寸(本地高清放大)单选组 ---- */
+.upscale-group { display: flex; width: 100%; }
+.upscale-group :deep(.el-radio-button) { flex: 1; }
+.upscale-group :deep(.el-radio-button__inner) {
+  width: 100%;
+  padding-left: 0;
+  padding-right: 0;
+  letter-spacing: 0.2px;
+}
 .opt-slug { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 13px; }
 
 /* ====================== Chat ====================== */

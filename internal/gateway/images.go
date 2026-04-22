@@ -68,6 +68,12 @@ type ImageGenRequest struct {
 	ResponseFormat  string   `json:"response_format,omitempty"` // url | b64_json(暂仅支持 url)
 	User            string   `json:"user,omitempty"`
 	ReferenceImages []string `json:"reference_images,omitempty"` // 非标准扩展,见注释
+	// Upscale 非标准扩展:控制"本服务对原图做本地高清放大"的目标档位。
+	// 可选值:""(原图直出,默认)/ "2k"(长边 2560) / "4k"(长边 3840)。
+	// 算法:golang.org/x/image/draw.CatmullRom(传统插值,不是 AI 超分)。
+	// 生效时机:图片代理 URL 首次请求时做一次 decode+放大+PNG 编码,之后进程内
+	// LRU 缓存命中毫秒级返回。仅影响 /v1/images/proxy/... 的出口字节,不改原图。
+	Upscale string `json:"upscale,omitempty"`
 }
 
 // ImageGenData 单张图响应。
@@ -114,6 +120,7 @@ func (h *ImagesHandler) ImageGenerations(c *gin.Context) {
 	if req.Size == "" {
 		req.Size = "1024x1024"
 	}
+	req.Upscale = image.ValidateUpscale(req.Upscale)
 
 	refID := uuid.NewString()
 	rec := &usage.Log{
@@ -212,6 +219,7 @@ func (h *ImagesHandler) ImageGenerations(c *gin.Context) {
 		Prompt:          req.Prompt,
 		N:               req.N,
 		Size:            req.Size,
+		Upscale:         req.Upscale,
 		Status:          image.StatusDispatched,
 		EstimatedCredit: cost,
 	}
@@ -617,6 +625,7 @@ func (h *ImagesHandler) ImageEdits(c *gin.Context) {
 	if size == "" {
 		size = "1024x1024"
 	}
+	upscale := image.ValidateUpscale(c.Request.FormValue("upscale"))
 
 	// 主图 + 可能的多张
 	files, err := collectEditFiles(c.Request.MultipartForm)
@@ -749,6 +758,7 @@ func (h *ImagesHandler) ImageEdits(c *gin.Context) {
 			Prompt:          prompt,
 			N:               n,
 			Size:            size,
+			Upscale:         upscale,
 			Status:          image.StatusDispatched,
 			EstimatedCredit: cost,
 		})

@@ -49,6 +49,7 @@ type Task struct {
 	Prompt          string    `db:"prompt"`
 	N               int       `db:"n"`
 	Size            string    `db:"size"`
+	Upscale         string    `db:"upscale"` // '' | '2k' | '4k',ImageProxy 读取后对原图做 Catmull-Rom 放大
 	Status          string    `db:"status"`
 	ConversationID  string    `db:"conversation_id"`
 	FileIDs         []byte    `db:"file_ids"`    // JSON 数组字符串
