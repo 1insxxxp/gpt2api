@@ -10,7 +10,7 @@ const router = useRouter()
 const store = useUserStore()
 const site = useSiteStore()
 
-const siteName = computed(() => site.get('site.name', 'GPT2API'))
+const siteName = computed(() => site.get('site.name', 'Passion AI'))
 const allowRegister = computed(() => site.allowRegister())
 
 const formRef = ref<FormInstance>()

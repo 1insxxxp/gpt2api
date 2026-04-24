@@ -11,11 +11,11 @@ const route = useRoute()
 const store = useUserStore()
 const site = useSiteStore()
 
-const siteName = computed(() => site.get('site.name', 'GPT2API'))
+const siteName = computed(() => site.get('site.name', 'Passion AI'))
 const siteDesc = computed(() =>
   site.get('site.description', '基于 chatgpt.com 的 OpenAI 兼容网关 · 多账号池 · IMG2 终稿直出 · 批量出图'),
 )
-const siteLogo = computed(() => site.get('site.logo_url', ''))
+const siteLogo = computed(() => site.get('site.logo_url', '/passion-logo.jpg'))
 const siteFooter = computed(() => site.get('site.footer', ''))
 const allowRegister = computed(() => site.allowRegister())
 

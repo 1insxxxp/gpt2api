@@ -10,8 +10,8 @@ const user = useUserStore()
 const ui = useUIStore()
 const site = useSiteStore()
 
-const siteName = computed(() => site.get('site.name', 'GPT2API'))
-const siteLogo = computed(() => site.get('site.logo_url', ''))
+const siteName = computed(() => site.get('site.name', 'Passion AI'))
+const siteLogo = computed(() => site.get('site.logo_url', '/passion-logo.jpg'))
 const allowRegister = computed(() => site.allowRegister())
 const loggedIn = computed(() => user.isLoggedIn)
 

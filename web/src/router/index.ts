@@ -20,7 +20,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/',
     component: () => import('@/views/landing/Home.vue'),
-    meta: { public: true, title: 'GPT2API · ChatGPT 兼容 SaaS 网关 · IMG2 终稿直出 · 批量出图' },
+    meta: { public: true, title: 'Passion AI · ChatGPT 兼容 SaaS 网关 · IMG2 终稿直出 · 批量出图' },
   },
   {
     path: '/',
@@ -105,7 +105,7 @@ const router = createRouter({
 
 router.beforeEach(async (to) => {
   const store = useUserStore()
-  const title = (to.meta.title as string) || 'GPT2API 控制台'
+  const title = (to.meta.title as string) || 'Passion AI 控制台'
   document.title = title
 
   if (to.meta.public) return true

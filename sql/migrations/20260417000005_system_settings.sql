@@ -17,9 +17,9 @@ CREATE TABLE IF NOT EXISTS `system_settings` (
 
 -- 默认值种子(已存在则保留原值不覆盖)
 INSERT INTO `system_settings` (`k`, `v`, `description`) VALUES
-    ('site.name',           'GPT2API',                '站点名称,展示在登录页/顶栏'),
+    ('site.name',           'Passion AI',             '站点名称,展示在登录页/顶栏'),
     ('site.description',    '企业级 OpenAI 兼容网关',  '登录页副标题'),
-    ('site.logo_url',       '',                        '站点 Logo URL,空则显示默认图标'),
+    ('site.logo_url',       '/passion-logo.jpg',       '站点 Logo URL,空则显示默认图标'),
     ('site.footer',         '',                        '页脚版权/备案文本(支持纯文本)'),
     ('site.contact_email',  '',                        '站点对外联系邮箱'),
 

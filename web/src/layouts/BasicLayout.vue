@@ -15,8 +15,8 @@ const site = useSiteStore()
 const router = useRouter()
 const route = useRoute()
 
-const siteName = computed(() => site.get('site.name', 'GPT2API'))
-const siteLogo = computed(() => site.get('site.logo_url', ''))
+const siteName = computed(() => site.get('site.name', 'Passion AI'))
+const siteLogo = computed(() => site.get('site.logo_url', '/passion-logo.jpg'))
 const siteFooter = computed(() => site.get('site.footer', ''))
 
 // 版权/广告条(XOR + Base64 混淆,不要直接把明文写在模板里)

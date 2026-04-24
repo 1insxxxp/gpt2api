@@ -12,9 +12,9 @@ import { fetchSiteInfo } from '@/api/settings'
  */
 export const useSiteStore = defineStore('site', () => {
   const info = ref<Record<string, string>>({
-    'site.name': 'GPT2API',
+    'site.name': 'Passion AI',
     'site.description': '企业级 OpenAI 兼容网关',
-    'site.logo_url': '',
+    'site.logo_url': '/passion-logo.jpg',
     'site.footer': '',
     'site.contact_email': '',
     'auth.allow_register': 'true',
@@ -35,7 +35,7 @@ export const useSiteStore = defineStore('site', () => {
   }
 
   function applyDocumentTitle() {
-    const n = info.value['site.name'] || 'GPT2API'
+    const n = info.value['site.name'] || 'Passion AI'
     document.title = `${n} 控制台`
   }
 

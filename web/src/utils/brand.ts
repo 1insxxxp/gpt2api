@@ -1,30 +1,5 @@
-// Brand footer fragments are decoded in the browser at runtime.
-
-const _K = new Uint8Array([0x4f, 0x17, 0x9a, 0x3b])
-
-// 解码:Base64 → XOR → UTF-8
-function _d(enc: string): string {
-  const bin = atob(enc)
-  const u = new Uint8Array(bin.length)
-  for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i) ^ _K[i % _K.length]
-  return new TextDecoder('utf-8').decode(u)
-}
-
-// 预计算片段(XOR-key=0x4F17 9A3B, Base64)
-const _F = {
-  BRAND: 'CEfOCQ5H0w==',
-  SEP: 'b9UtGw==',
-}
-
-// 缓存
-let _cache: Record<string, string> | null = null
-function _all(): Record<string, string> {
-  if (_cache) return _cache
-  const out: Record<string, string> = {}
-  for (const k of Object.keys(_F)) out[k] = _d((_F as Record<string, string>)[k])
-  _cache = out
-  return out
-}
+const BRAND_NAME = 'Passion AI'
+const SEPARATOR = '·'
 
 export interface BrandParts {
   brand: string
@@ -32,10 +7,9 @@ export interface BrandParts {
 }
 
 export function brandParts(): BrandParts {
-  const p = _all()
   return {
-    brand: p.BRAND,
-    sep: p.SEP,
+    brand: BRAND_NAME,
+    sep: SEPARATOR,
   }
 }
 
