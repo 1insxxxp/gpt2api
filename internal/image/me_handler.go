@@ -8,6 +8,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"github.com/432539/gpt2api/internal/imgproxy"
 	"github.com/432539/gpt2api/internal/middleware"
 	"github.com/432539/gpt2api/pkg/resp"
 )
@@ -22,28 +23,28 @@ func NewMeHandler(dao *DAO) *MeHandler { return &MeHandler{dao: dao} }
 
 // taskView 是对外返回的视图结构,解码 JSON 列 + 隐藏内部字段。
 type taskView struct {
-	ID             uint64    `json:"id"`
-	TaskID         string    `json:"task_id"`
-	UserID         uint64    `json:"user_id"`
-	ModelID        uint64    `json:"model_id"`
-	AccountID      uint64    `json:"account_id"`
-	Prompt         string    `json:"prompt"`
-	N              int       `json:"n"`
-	Size           string    `json:"size"`
-	Upscale        string    `json:"upscale,omitempty"`
-	Status         string    `json:"status"`
-	ConversationID string    `json:"conversation_id,omitempty"`
-	Error          string    `json:"error,omitempty"`
-	CreditCost     int64     `json:"credit_cost"`
-	ImageURLs      []string  `json:"image_urls"`
-	FileIDs        []string  `json:"file_ids,omitempty"`
-	CreatedAt      time.Time `json:"created_at"`
+	ID             uint64     `json:"id"`
+	TaskID         string     `json:"task_id"`
+	UserID         uint64     `json:"user_id"`
+	ModelID        uint64     `json:"model_id"`
+	AccountID      uint64     `json:"account_id"`
+	Prompt         string     `json:"prompt"`
+	N              int        `json:"n"`
+	Size           string     `json:"size"`
+	Upscale        string     `json:"upscale,omitempty"`
+	Status         string     `json:"status"`
+	ConversationID string     `json:"conversation_id,omitempty"`
+	Error          string     `json:"error,omitempty"`
+	CreditCost     int64      `json:"credit_cost"`
+	ImageURLs      []string   `json:"image_urls"`
+	FileIDs        []string   `json:"file_ids,omitempty"`
+	CreatedAt      time.Time  `json:"created_at"`
 	StartedAt      *time.Time `json:"started_at,omitempty"`
 	FinishedAt     *time.Time `json:"finished_at,omitempty"`
 }
 
 func toView(t *Task) taskView {
-	urls := t.DecodeResultURLs()
+	urls := imageURLsForView(t)
 	fids := t.DecodeFileIDs()
 	for i, id := range fids {
 		fids[i] = strings.TrimPrefix(id, "sed:")
@@ -52,10 +53,25 @@ func toView(t *Task) taskView {
 		ID: t.ID, TaskID: t.TaskID, UserID: t.UserID, ModelID: t.ModelID,
 		AccountID: t.AccountID, Prompt: t.Prompt, N: t.N, Size: t.Size,
 		Upscale: t.Upscale,
-		Status: t.Status, ConversationID: t.ConversationID, Error: t.Error,
+		Status:  t.Status, ConversationID: t.ConversationID, Error: t.Error,
 		CreditCost: t.CreditCost, ImageURLs: urls, FileIDs: fids,
 		CreatedAt: t.CreatedAt, StartedAt: t.StartedAt, FinishedAt: t.FinishedAt,
 	}
+}
+
+func imageURLsForView(t *Task) []string {
+	if t == nil {
+		return nil
+	}
+	fids := t.DecodeFileIDs()
+	if t.Status == StatusSuccess && t.TaskID != "" && len(fids) > 0 {
+		urls := make([]string, 0, len(fids))
+		for i := range fids {
+			urls = append(urls, imgproxy.BuildURL(t.TaskID, i, imgproxy.TTL))
+		}
+		return urls
+	}
+	return t.DecodeResultURLs()
 }
 
 // GET /api/me/images/tasks

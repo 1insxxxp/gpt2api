@@ -53,9 +53,10 @@ func (h *AdminHandler) List(c *gin.Context) {
 	}
 	out := make([]rowOut, 0, len(rows))
 	for _, r := range rows {
+		resultURLs := imageURLsForView(&r.Task)
 		out = append(out, rowOut{
 			AdminTaskRow:     r,
-			ResultURLsParsed: r.DecodeResultURLs(),
+			ResultURLsParsed: resultURLs,
 		})
 	}
 
